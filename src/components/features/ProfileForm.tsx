@@ -67,8 +67,7 @@ export default function ProfileForm({ userName, userEmail, avatarUrl }: ProfileF
       if (result.error) {
         setAvatarMsg({ type: 'err', text: result.error })
       } else if (result.avatar_url) {
-        // Añade timestamp para forzar recarga de imagen
-        setCurrentAvatar(`${result.avatar_url}?t=${Date.now()}`)
+        setCurrentAvatar(result.avatar_url)
         setAvatarMsg({ type: 'ok', text: 'Foto actualizada correctamente' })
       }
     })

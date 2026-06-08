@@ -43,11 +43,12 @@ export async function uploadAvatar(formData: FormData): Promise<ProfileActionRes
   if (file.size > 5 * 1024 * 1024) return { error: 'El archivo no puede superar 5MB' }
 
   const ext = file.name.split('.').pop()
-  const path = `${user.id}/avatar.${ext}`
+  // Usamos timestamp en el nombre para evitar caché del CDN
+  const path = `${user.id}/avatar-${Date.now()}.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(path, file, { upsert: true })
+    .upload(path, file, { upsert: false })
 
   if (uploadError) return { error: uploadError.message }
 
