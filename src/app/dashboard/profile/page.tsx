@@ -28,8 +28,8 @@ export default async function ProfilePage() {
       <style>{`
         .page { padding: 36px 40px; max-width: 720px; width: 100%; }
         .page-header { margin-bottom: 28px; }
-        .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; color: #1d1d1f; }
-        .page-subtitle { font-size: 14px; color: #aeaeb2; margin-top: 2px; }
+        .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; color: var(--text-primary); }
+        .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
         @media (max-width: 1024px) { .page { padding: 24px 20px; } }
         @media (max-width: 480px) { .page { padding: 20px 16px; } .page-title { font-size: 22px; } }
       `}</style>

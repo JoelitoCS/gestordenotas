@@ -8,8 +8,8 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import Highlight from '@tiptap/extension-highlight'
 import Placeholder from '@tiptap/extension-placeholder'
 import { createClient } from '@/lib/supabase/client'
-import { useEffect } from 'react'
-import { Bold, Italic, Heading2, List, ListOrdered, Highlighter, Image as ImageIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Bold, Italic, Heading2, List, ListOrdered, Highlighter, Image as ImageIcon, X } from 'lucide-react'
 
 interface TiptapEditorProps {
   content: string
@@ -18,6 +18,8 @@ interface TiptapEditorProps {
 
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const supabase = createClient()
+  const [hoveredImg, setHoveredImg] = useState<string | null>(null)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
 
   const editor = useEditor({
     extensions: [
@@ -40,80 +42,28 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         'aria-multiline': 'true',
         role: 'textbox',
       },
-      // Botón de eliminar imagen al hacer clic en la X
-      handleClick(view, pos, event) {
-        const target = event.target as HTMLElement
-        if (target.closest('[data-delete-img]')) {
-          const btn = target.closest('[data-delete-img]') as HTMLElement
-          const imgPos = Number(btn.dataset.deleteImg)
-          if (!isNaN(imgPos)) {
-            const node = view.state.doc.nodeAt(imgPos)
-            if (node && node.type.name === 'image') {
-              view.dispatch(view.state.tr.delete(imgPos, imgPos + node.nodeSize))
-              return true
-            }
-          }
-        }
-        return false
-      },
     },
   })
 
-  // Inyecta botones de eliminar sobre cada imagen del editor
-  useEffect(() => {
-    if (!editor) return
-
-    function injectDeleteButtons() {
-      const wrap = editor?.view.dom as HTMLElement
-      if (!wrap) return
-
-      // Quita botones previos
-      wrap.querySelectorAll('.img-delete-btn').forEach(b => b.remove())
-
-      wrap.querySelectorAll('img').forEach(img => {
-        const parent = img.parentElement
-        if (!parent) return
-        if (parent.style.position !== 'relative') parent.style.position = 'relative'
-
-        const btn = document.createElement('button')
-        btn.className = 'img-delete-btn'
-        btn.setAttribute('aria-label', 'Eliminar imagen')
-        btn.setAttribute('title', 'Eliminar imagen')
-        btn.type = 'button'
-        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
-
-        btn.addEventListener('mousedown', (e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          // Encuentra la posición del nodo en el doc
-          const view = editor?.view
-          if (!view) return
-          let found = false
-          view.state.doc.descendants((node, pos) => {
-            if (found) return false
-            if (node.type.name === 'image' && node.attrs.src === img.src) {
-              view.dispatch(view.state.tr.delete(pos, pos + node.nodeSize))
-              found = true
-              return false
-            }
-          })
-        })
-
-        parent.appendChild(btn)
-      })
-    }
-
-    // Inyecta al inicio y cada vez que cambie el contenido
-    const unsubscribe = editor.on('update', injectDeleteButtons)
-    // También al montar
-    setTimeout(injectDeleteButtons, 100)
-
-    return () => {
-      unsubscribe.removeAllListeners()
-    }
-  }, [editor])
-
   useEffect(() => { return () => { editor?.destroy() } }, [editor])
+
+  // Cierra lightbox con Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setLightboxSrc(null) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  function deleteImageBySrc(src: string) {
+    if (!editor) return
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'image' && node.attrs.src === src) {
+        editor.chain().focus().deleteRange({ from: pos, to: pos + node.nodeSize }).run()
+        setHoveredImg(null)
+        return false
+      }
+    })
+  }
 
   async function handleImageUpload() {
     const input = document.createElement('input')
@@ -134,6 +84,17 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     input.click()
   }
 
+  function getImages(): { src: string; alt: string }[] {
+    if (!editor) return []
+    const imgs: { src: string; alt: string }[] = []
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'image') {
+        imgs.push({ src: node.attrs.src, alt: node.attrs.alt ?? '' })
+      }
+    })
+    return imgs
+  }
+
   if (!editor) return null
 
   const tools = [
@@ -141,15 +102,18 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     { icon: <Italic size={14} />, label: 'Cursiva', action: () => editor.chain().focus().toggleItalic().run(), active: editor.isActive('italic') },
     { icon: <Heading2 size={14} />, label: 'Título', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(), active: editor.isActive('heading', { level: 2 }) },
     null,
-    { icon: <List size={14} />, label: 'Lista con viñetas', action: () => editor.chain().focus().toggleBulletList().run(), active: editor.isActive('bulletList') },
+    { icon: <List size={14} />, label: 'Lista', action: () => editor.chain().focus().toggleBulletList().run(), active: editor.isActive('bulletList') },
     { icon: <ListOrdered size={14} />, label: 'Lista numerada', action: () => editor.chain().focus().toggleOrderedList().run(), active: editor.isActive('orderedList') },
     null,
     { icon: <Highlighter size={14} />, label: 'Resaltar', action: () => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run(), active: editor.isActive('highlight') },
     { icon: <ImageIcon size={14} />, label: 'Imagen', action: handleImageUpload, active: false },
   ]
 
+  const images = getImages()
+
   return (
     <div className="tiptap-wrap">
+      {/* Toolbar */}
       <div className="tiptap-toolbar" role="toolbar" aria-label="Herramientas del editor">
         <label className="tool-btn" title="Color de texto" aria-label="Color de texto">
           <span style={{ fontWeight: 700, fontSize: 13, borderBottom: '2px solid currentColor', paddingBottom: 1 }}>A</span>
@@ -167,7 +131,68 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         )}
       </div>
 
+      {/* Imágenes */}
+      {images.length > 0 && (
+        <div className="img-preview-list" aria-label="Imágenes de la nota">
+          {images.map((img, i) => (
+            <div
+              key={`${img.src}-${i}`}
+              className="img-preview-wrap"
+              onMouseEnter={() => setHoveredImg(img.src)}
+              onMouseLeave={() => setHoveredImg(null)}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.src}
+                alt={img.alt || 'Imagen de la nota'}
+                className="img-preview"
+                onClick={() => setLightboxSrc(img.src)}
+                title="Clic para ver en tamaño completo"
+              />
+              {hoveredImg === img.src && (
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); deleteImageBySrc(img.src) }}
+                  className="img-delete-btn"
+                  aria-label="Eliminar imagen"
+                  title="Eliminar imagen"
+                >
+                  <X size={11} strokeWidth={2.5} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Editor texto */}
       <EditorContent editor={editor} />
+
+      {/* Lightbox */}
+      {lightboxSrc && (
+        <div
+          className="lightbox-overlay"
+          onClick={() => setLightboxSrc(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Imagen a tamaño completo"
+        >
+          <button
+            className="lightbox-close"
+            onClick={() => setLightboxSrc(null)}
+            aria-label="Cerrar imagen"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxSrc}
+            alt="Imagen a tamaño completo"
+            className="lightbox-img"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       <style>{`
         .tiptap-wrap { display: flex; flex-direction: column; }
@@ -186,74 +211,123 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
         .tool-btn.active { background: rgba(0,113,227,0.12); color: var(--accent); }
         .tool-sep { width: 1px; height: 16px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
 
-        /* ── Editor ── */
-        .tiptap-editor {
-          padding: 16px 20px; min-height: 180px; outline: none;
-          font-size: 15px; line-height: 1.65;
-          color: var(--text-primary) !important;
+        /* ── Previews de imágenes ── */
+        .img-preview-list {
+          display: flex; flex-wrap: wrap; gap: 10px;
+          padding: 14px 16px; border-bottom: 1px solid var(--border);
           background: var(--surface);
         }
-        .tiptap-editor * { color: inherit; }
-        .tiptap-editor p { margin-bottom: 8px; color: var(--text-primary); }
-        .tiptap-editor p:last-child { margin-bottom: 0; }
-        .tiptap-editor h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; margin-top: 4px; letter-spacing: -0.3px; color: var(--text-primary); }
-        .tiptap-editor strong { color: var(--text-primary); }
-        .tiptap-editor em { color: var(--text-primary); }
-
-        /* Listas */
-        .tiptap-editor ul { list-style-type: disc !important; padding-left: 22px !important; margin-bottom: 8px; }
-        .tiptap-editor ul li { display: list-item !important; list-style-type: disc !important; margin-bottom: 3px; color: var(--text-primary); }
-        .tiptap-editor ol { list-style-type: decimal !important; padding-left: 22px !important; margin-bottom: 8px; }
-        .tiptap-editor ol li { display: list-item !important; list-style-type: decimal !important; margin-bottom: 3px; color: var(--text-primary); }
-
-        /* Imágenes con botón de eliminar */
-        .tiptap-editor p:has(img) {
+        .img-preview-wrap {
           position: relative;
           display: inline-block;
-          width: 100%;
+          flex-shrink: 0;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .tiptap-editor img {
-          max-width: 100%; max-height: 320px; object-fit: cover;
-          border-radius: 10px; margin: 8px 0; display: block;
+        .img-preview {
+          display: block;
+          max-width: 200px;
+          max-height: 160px;
+          width: auto;
+          height: auto;
+          object-fit: contain;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: opacity .2s;
         }
+        .img-preview-wrap:hover .img-preview { opacity: 0.88; }
 
-        /* Botón eliminar imagen */
+        /* Botón eliminar — solo visible en hover */
         .img-delete-btn {
           position: absolute;
-          top: 14px;
+          top: 6px;
           right: 6px;
-          width: 26px;
-          height: 26px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          background: rgba(0,0,0,0.65);
+          background: rgba(0,0,0,0.72);
           color: #fff;
           border: none;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          opacity: 0;
-          transition: opacity .2s, transform .15s;
-          z-index: 10;
+          transition: background .15s, transform .15s;
           backdrop-filter: blur(4px);
-        }
-        .tiptap-editor p:has(img):hover .img-delete-btn,
-        .tiptap-editor p:hover .img-delete-btn {
-          opacity: 1;
+          z-index: 10;
         }
         .img-delete-btn:hover {
-          opacity: 1 !important;
+          background: rgba(220,38,38,0.9);
           transform: scale(1.1);
-          background: rgba(220,38,38,0.85);
         }
 
-        /* Placeholder */
+        /* ── Lightbox ── */
+        .lightbox-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          background: rgba(0,0,0,0.85);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          cursor: zoom-out;
+          animation: fadeIn .2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        .lightbox-img {
+          max-width: 90vw;
+          max-height: 85vh;
+          width: auto;
+          height: auto;
+          object-fit: contain;
+          border-radius: 14px;
+          box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+          cursor: default;
+          animation: scaleIn .2s cubic-bezier(0.22,1,0.36,1);
+        }
+        @keyframes scaleIn { from { transform: scale(0.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+        .lightbox-close {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background .15s;
+          backdrop-filter: blur(4px);
+          z-index: 2001;
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.25); }
+
+        /* ── Editor ── */
+        .tiptap-editor {
+          padding: 16px 20px; min-height: 180px; outline: none;
+          font-size: 15px; line-height: 1.65;
+          color: var(--text-primary); background: var(--surface);
+        }
+        .tiptap-editor * { color: inherit; }
+        .tiptap-editor p { margin-bottom: 8px; }
+        .tiptap-editor p:last-child { margin-bottom: 0; }
+        .tiptap-editor h2 { font-size: 18px; font-weight: 700; margin: 4px 0 10px; letter-spacing: -0.3px; }
+        .tiptap-editor strong, .tiptap-editor em { color: var(--text-primary); }
+        .tiptap-editor img { display: none; }
+        .tiptap-editor ul { list-style-type: disc !important; padding-left: 22px !important; margin-bottom: 8px; }
+        .tiptap-editor ul li { display: list-item !important; list-style-type: disc !important; margin-bottom: 3px; }
+        .tiptap-editor ol { list-style-type: decimal !important; padding-left: 22px !important; margin-bottom: 8px; }
+        .tiptap-editor ol li { display: list-item !important; list-style-type: decimal !important; margin-bottom: 3px; }
         .tiptap-editor p.is-editor-empty:first-child::before {
-          content: attr(data-placeholder);
-          color: var(--text-muted);
-          pointer-events: none;
-          float: left;
-          height: 0;
+          content: attr(data-placeholder); color: var(--text-muted);
+          pointer-events: none; float: left; height: 0;
         }
       `}</style>
     </div>
