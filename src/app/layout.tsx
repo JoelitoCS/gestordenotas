@@ -5,6 +5,11 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 export const metadata: Metadata = {
   title: 'NoteVault — Tu espacio personal',
   description: 'Gestiona tus notas y contraseñas de forma segura y elegante.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export const viewport: Viewport = {
