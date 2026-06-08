@@ -21,6 +21,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const [hoveredImg, setHoveredImg] = useState<string | null>(null)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const [isTouch, setIsTouch] = useState(false)
+  const [images, setImages] = useState<{ src: string; alt: string }[]>([])
 
   useEffect(() => {
     setIsTouch(window.matchMedia('(hover: none)').matches)
@@ -39,7 +40,17 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       Placeholder.configure({ placeholder: 'Escribe algo...' }),
     ],
     content,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML())
+      // Actualiza las imágenes en tiempo real
+      const imgs: { src: string; alt: string }[] = []
+      editor.state.doc.descendants(node => {
+        if (node.type.name === 'image') {
+          imgs.push({ src: node.attrs.src, alt: node.attrs.alt ?? '' })
+        }
+      })
+      setImages(imgs)
+    },
     editorProps: {
       attributes: {
         class: 'tiptap-editor',
@@ -51,6 +62,18 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   })
 
   useEffect(() => { return () => { editor?.destroy() } }, [editor])
+
+  // Carga las imágenes iniciales cuando el editor se monta
+  useEffect(() => {
+    if (!editor) return
+    const imgs: { src: string; alt: string }[] = []
+    editor.state.doc.descendants(node => {
+      if (node.type.name === 'image') {
+        imgs.push({ src: node.attrs.src, alt: node.attrs.alt ?? '' })
+      }
+    })
+    setImages(imgs)
+  }, [editor])
 
   // Cierra lightbox con Escape
   useEffect(() => {
@@ -89,16 +112,7 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     input.click()
   }
 
-  function getImages(): { src: string; alt: string }[] {
-    if (!editor) return []
-    const imgs: { src: string; alt: string }[] = []
-    editor.state.doc.descendants(node => {
-      if (node.type.name === 'image') {
-        imgs.push({ src: node.attrs.src, alt: node.attrs.alt ?? '' })
-      }
-    })
-    return imgs
-  }
+
 
   if (!editor) return null
 
@@ -113,8 +127,6 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     { icon: <Highlighter size={14} />, label: 'Resaltar', action: () => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run(), active: editor.isActive('highlight') },
     { icon: <ImageIcon size={14} />, label: 'Imagen', action: handleImageUpload, active: false },
   ]
-
-  const images = getImages()
 
   return (
     <div className="tiptap-wrap">
