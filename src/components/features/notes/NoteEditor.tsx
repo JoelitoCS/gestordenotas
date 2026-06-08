@@ -81,7 +81,7 @@ export default function NoteEditor({ note, onCreated, onUpdated, onClose }: Note
       role="dialog"
       aria-modal="true"
       aria-labelledby="editor-title"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+
     >
       <div className="modal" style={{ backgroundColor: bgColor }}>
         {/* Header */}
