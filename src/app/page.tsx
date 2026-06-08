@@ -191,12 +191,12 @@ export default function HomePage() {
       {/* NAV */}
       <nav className="home-nav" role="navigation" aria-label="Navegación principal">
         <div className="home-nav-inner">
-          <Link href="/" className="home-logo" aria-label="NoteVault inicio">
+          <Link href="/" className="home-logo" aria-label="Clavis inicio">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
               <rect width="22" height="22" rx="6" fill="currentColor"/>
               <path d="M6 11h10M11 6v10" stroke={theme === 'dark' ? '#000' : '#fff'} strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            NoteVault
+            Clavis
           </Link>
           <div className="home-nav-right">
             <Link href="/auth/login" className="btn-ghost">Iniciar sesión</Link>
@@ -335,8 +335,8 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="home-footer" role="contentinfo">
         <div className="home-footer-inner">
-          <span className="footer-logo">NoteVault</span>
-          <p className="footer-copy">© {new Date().getFullYear()} NoteVault</p>
+          <span className="footer-logo">Clavis</span>
+          <p className="footer-copy">© {new Date().getFullYear()} Clavis</p>
         </div>
       </footer>
     </main>

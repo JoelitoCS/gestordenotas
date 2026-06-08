@@ -43,12 +43,12 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
     <>
       {/* Logo + close btn */}
       <div style={{ padding: '2px 10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" aria-label="NoteVault inicio" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
+        <Link href="/" aria-label="Clavis inicio" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
             <rect width="22" height="22" rx="6" fill="var(--btn-bg)"/>
             <path d="M6 11h10M11 6v10" stroke="var(--btn-text)" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          NoteVault
+          Clavis
         </Link>
         <button onClick={() => setMobileOpen(false)} className="sidebar-close-btn" aria-label="Cerrar menú">
           <X size={18} />
@@ -184,12 +184,12 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
 
       {/* MÓVIL topbar */}
       <div className="mobile-topbar" aria-label="Cabecera móvil">
-        <Link href="/" className="mobile-logo" aria-label="NoteVault inicio">
+        <Link href="/" className="mobile-logo" aria-label="Clavis inicio">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
             <rect width="22" height="22" rx="6" fill="var(--btn-bg)"/>
             <path d="M6 11h10M11 6v10" stroke="var(--btn-text)" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          NoteVault
+          Clavis
         </Link>
         <div className="mobile-topbar-right">
           <button className="topbar-theme-btn" onClick={toggle} aria-label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>

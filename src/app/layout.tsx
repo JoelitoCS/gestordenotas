@@ -3,7 +3,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'NoteVault — Tu espacio personal',
+  title: 'Clavis',
   description: 'Gestiona tus notas y contraseñas de forma segura y elegante.',
   icons: {
     icon: '/favicon.svg',
