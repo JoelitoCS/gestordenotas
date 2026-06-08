@@ -35,7 +35,7 @@ export default function RegisterPage() {
             <rect width="22" height="22" rx="6" fill="#1d1d1f"/>
             <path d="M6 11h10M11 6v10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Clavis
+          Clavey
         </Link>
 
         <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.6px', color: '#1d1d1f', marginBottom: 4 }}>Crear cuenta</h1>

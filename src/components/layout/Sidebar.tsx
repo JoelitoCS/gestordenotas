@@ -48,7 +48,7 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
             <rect width="22" height="22" rx="6" fill="var(--btn-bg)"/>
             <path d="M6 11h10M11 6v10" stroke="var(--btn-text)" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Clavis
+          Clavey
         </Link>
         <button onClick={() => setMobileOpen(false)} className="sidebar-close-btn" aria-label="Cerrar menú">
           <X size={18} />
@@ -189,7 +189,7 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
             <rect width="22" height="22" rx="6" fill="var(--btn-bg)"/>
             <path d="M6 11h10M11 6v10" stroke="var(--btn-text)" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Clavis
+          Clavey
         </Link>
         <div className="mobile-topbar-right">
           <button className="topbar-theme-btn" onClick={toggle} aria-label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>

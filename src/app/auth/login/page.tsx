@@ -30,13 +30,12 @@ export default function LoginPage() {
     <main id="main-content" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#f5f5f7' }}>
       <div style={{ background: '#fff', borderRadius: 24, padding: '40px 36px', width: '100%', maxWidth: 400, border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
 
-        {/* Logo */}
         <Link href="/" aria-label="Volver al inicio" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: '#1d1d1f', fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px', marginBottom: 32 }}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
             <rect width="22" height="22" rx="6" fill="#1d1d1f"/>
             <path d="M6 11h10M11 6v10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          Clavis
+          Clavey
         </Link>
 
         <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.6px', color: '#1d1d1f', marginBottom: 4 }}>Bienvenido de vuelta</h1>
