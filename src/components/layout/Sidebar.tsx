@@ -1,10 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useTransition } from 'react'
-import { FileText, Lock, User, LogOut, Plus } from 'lucide-react'
+import { FileText, Lock, User, LogOut, Menu, X } from 'lucide-react'
 import { logout } from '@/actions/auth'
 
 interface SidebarProps {
@@ -22,6 +23,16 @@ const navItems = [
 export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps) {
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Cierra el menú al cambiar de ruta
+  useEffect(() => { setMobileOpen(false) }, [pathname])
+
+  // Bloquea el scroll del body cuando el menú está abierto
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   function handleLogout() {
     startTransition(async () => { await logout() })
@@ -29,11 +40,10 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
 
   const initials = userName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
 
-  return (
-    <aside style={{ width: 240, minHeight: '100vh', background: '#fff', borderRight: '1px solid rgba(0,0,0,0.07)', display: 'flex', flexDirection: 'column', padding: '20px 10px', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }} aria-label="Navegación del dashboard">
-
+  const SidebarContent = () => (
+    <>
       {/* Logo */}
-      <div style={{ padding: '2px 10px 24px' }}>
+      <div style={{ padding: '2px 10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/" aria-label="NoteVault inicio" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: '#1d1d1f', fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
             <rect width="22" height="22" rx="6" fill="#1d1d1f"/>
@@ -41,6 +51,14 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
           </svg>
           NoteVault
         </Link>
+        {/* Botón cerrar solo en móvil */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="sidebar-close-btn"
+          aria-label="Cerrar menú"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Nav */}
@@ -54,7 +72,7 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
                   href={item.href}
                   aria-current={isActive ? 'page' : undefined}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px',
+                    display: 'flex', alignItems: 'center', gap: 9, padding: '10px 10px',
                     borderRadius: 10, fontSize: 14, fontWeight: isActive ? 600 : 500,
                     color: isActive ? '#1d1d1f' : '#6e6e73',
                     background: isActive ? '#f5f5f7' : 'transparent',
@@ -72,11 +90,11 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
 
       {/* Footer */}
       <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }} aria-label={`Sesión como ${userName}`}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
           {avatarUrl ? (
             <Image src={avatarUrl} alt={`Avatar de ${userName}`} width={30} height={30} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
           ) : (
-            <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#1d1d1f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }} aria-hidden="true">
+            <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#1d1d1f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
               {initials}
             </div>
           )}
@@ -85,13 +103,190 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
             <span style={{ fontSize: 11, color: '#aeaeb2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userEmail}</span>
           </div>
         </div>
-        <button onClick={handleLogout} disabled={isPending} aria-label="Cerrar sesión" title="Cerrar sesión"
-          style={{ background: 'none', border: 'none', cursor: isPending ? 'not-allowed' : 'pointer', padding: 6, borderRadius: 8, color: '#aeaeb2', display: 'flex', alignItems: 'center', opacity: isPending ? 0.5 : 1, flexShrink: 0, transition: 'color .15s, background .15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f7'; e.currentTarget.style.color = '#1d1d1f' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#aeaeb2' }}>
+        <button
+          onClick={handleLogout}
+          disabled={isPending}
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          style={{ background: 'none', border: 'none', cursor: isPending ? 'not-allowed' : 'pointer', padding: 6, borderRadius: 8, color: '#aeaeb2', display: 'flex', alignItems: 'center', opacity: isPending ? 0.5 : 1, flexShrink: 0, transition: 'color .15s' }}
+        >
           <LogOut size={15} aria-hidden="true" />
         </button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      <style>{`
+        /* ── Desktop sidebar ── */
+        .sidebar-desktop {
+          width: 240px;
+          min-height: 100vh;
+          background: #fff;
+          border-right: 1px solid rgba(0,0,0,0.07);
+          display: flex;
+          flex-direction: column;
+          padding: 20px 10px;
+          flex-shrink: 0;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          overflow-y: auto;
+        }
+
+        /* ── Mobile topbar ── */
+        .mobile-topbar {
+          display: none;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          background: rgba(255,255,255,0.92);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(0,0,0,0.07);
+          padding: 0 20px;
+          height: 54px;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .mobile-logo {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          color: #1d1d1f;
+          font-weight: 700;
+          font-size: 15px;
+          letter-spacing: -0.3px;
+        }
+        .hamburger-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 6px;
+          border-radius: 10px;
+          color: #1d1d1f;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background .15s;
+        }
+        .hamburger-btn:hover { background: #f5f5f7; }
+
+        /* ── Mobile drawer overlay ── */
+        .mobile-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          background: rgba(0,0,0,0);
+          transition: background 0.35s ease;
+          pointer-events: none;
+        }
+        .mobile-overlay.open {
+          background: rgba(0,0,0,0.3);
+          pointer-events: all;
+        }
+
+        /* ── Mobile drawer ── */
+        .mobile-drawer {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 280px;
+          background: #fff;
+          z-index: 101;
+          display: flex;
+          flex-direction: column;
+          padding: 20px 10px;
+          transform: translateX(-100%);
+          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+          box-shadow: 4px 0 32px rgba(0,0,0,0.08);
+          /* Safe area para iPhone con notch */
+          padding-left: max(10px, env(safe-area-inset-left));
+          padding-top: max(20px, env(safe-area-inset-top));
+          padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+        .mobile-drawer.open {
+          transform: translateX(0);
+        }
+
+        /* Botón cerrar — solo visible en móvil */
+        .sidebar-close-btn {
+          display: none;
+          background: #f5f5f7;
+          border: none;
+          border-radius: 10px;
+          padding: 6px;
+          cursor: pointer;
+          color: #1d1d1f;
+          align-items: center;
+          justify-content: center;
+          transition: background .15s;
+        }
+        .sidebar-close-btn:hover { background: #ebebeb; }
+
+        /* ── Responsive breakpoints ── */
+        /* Tablet + móvil: ≤ 1024px */
+        @media (max-width: 1024px) {
+          .sidebar-desktop { display: none; }
+          .mobile-topbar { display: flex; }
+          .mobile-overlay { display: block; }
+          .sidebar-close-btn { display: flex; }
+        }
+
+        /* Desktop: > 1024px */
+        @media (min-width: 1025px) {
+          .mobile-topbar { display: none !important; }
+          .mobile-overlay { display: none !important; }
+          .mobile-drawer { display: none !important; }
+          .sidebar-desktop { display: flex; }
+        }
+      `}</style>
+
+      {/* ── DESKTOP: sidebar fijo ── */}
+      <aside className="sidebar-desktop" aria-label="Navegación del dashboard">
+        <SidebarContent />
+      </aside>
+
+      {/* ── MÓVIL / TABLET: topbar + drawer ── */}
+      <div className="mobile-topbar" aria-label="Cabecera móvil">
+        <Link href="/" className="mobile-logo" aria-label="NoteVault inicio">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+            <rect width="22" height="22" rx="6" fill="#1d1d1f"/>
+            <path d="M6 11h10M11 6v10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          NoteVault
+        </Link>
+        <button
+          className="hamburger-btn"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Abrir menú"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-drawer"
+        >
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Overlay oscuro */}
+      <div
+        className={`mobile-overlay ${mobileOpen ? 'open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Drawer */}
+      <nav
+        id="mobile-drawer"
+        className={`mobile-drawer ${mobileOpen ? 'open' : ''}`}
+        aria-label="Menú de navegación"
+        aria-hidden={!mobileOpen}
+      >
+        <SidebarContent />
+      </nav>
+    </>
   )
 }

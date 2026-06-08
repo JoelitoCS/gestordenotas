@@ -28,8 +28,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {children}
       </main>
       <style>{`
-        .dashboard { display: flex; min-height: 100vh; background: #f5f5f7; }
-        .dashboard-main { flex: 1; min-width: 0; overflow-y: auto; }
+        .dashboard {
+          display: flex;
+          min-height: 100vh;
+          background: #f5f5f7;
+        }
+        .dashboard-main {
+          flex: 1;
+          min-width: 0;
+          overflow-y: auto;
+          /* En móvil el main ocupa todo el ancho */
+          display: flex;
+          flex-direction: column;
+        }
+        @media (max-width: 1024px) {
+          .dashboard {
+            flex-direction: column;
+          }
+        }
       `}</style>
     </div>
   )

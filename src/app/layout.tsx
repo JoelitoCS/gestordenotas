@@ -1,9 +1,15 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'NoteVault — Tu espacio personal',
   description: 'Gestiona tus notas y contraseñas de forma segura y elegante.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover', // Cubre el notch y Dynamic Island en iPhone
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
