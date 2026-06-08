@@ -31,7 +31,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         .dashboard {
           display: flex;
           min-height: 100vh;
-          background: #f5f5f7;
+          background: var(--bg);
+          transition: background .3s;
         }
         .dashboard-main {
           flex: 1;

@@ -74,8 +74,8 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
                   style={{
                     display: 'flex', alignItems: 'center', gap: 9, padding: '10px 10px',
                     borderRadius: 10, fontSize: 14, fontWeight: isActive ? 600 : 500,
-                    color: isActive ? '#1d1d1f' : '#6e6e73',
-                    background: isActive ? '#f5f5f7' : 'transparent',
+                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    background: isActive ? 'var(--surface-2)' : 'transparent',
                     textDecoration: 'none', transition: 'background .15s, color .15s',
                   }}
                 >
@@ -123,8 +123,8 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
         .sidebar-desktop {
           width: 240px;
           min-height: 100vh;
-          background: #fff;
-          border-right: 1px solid rgba(0,0,0,0.07);
+          background: var(--surface);
+          border-right: 1px solid var(--border);
           display: flex;
           flex-direction: column;
           padding: 20px 10px;
@@ -133,6 +133,7 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
           top: 0;
           height: 100vh;
           overflow-y: auto;
+          transition: background .3s, border-color .3s;
         }
 
         /* ── Mobile topbar ── */
@@ -141,14 +142,16 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
           position: sticky;
           top: 0;
           z-index: 50;
-          background: rgba(255,255,255,0.92);
+          background: rgba(var(--surface), 0.92);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(0,0,0,0.07);
+          border-bottom: 1px solid var(--border);
           padding: 0 20px;
           height: 54px;
           align-items: center;
           justify-content: space-between;
+          background: var(--surface);
+          transition: background .3s;
         }
         .mobile-logo {
           display: flex;
@@ -196,15 +199,14 @@ export default function Sidebar({ userName, avatarUrl, userEmail }: SidebarProps
           left: 0;
           bottom: 0;
           width: 280px;
-          background: #fff;
+          background: var(--surface);
           z-index: 101;
           display: flex;
           flex-direction: column;
           padding: 20px 10px;
           transform: translateX(-100%);
-          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background .3s;
           box-shadow: 4px 0 32px rgba(0,0,0,0.08);
-          /* Safe area para iPhone con notch */
           padding-left: max(10px, env(safe-area-inset-left));
           padding-top: max(20px, env(safe-area-inset-top));
           padding-bottom: max(20px, env(safe-area-inset-bottom));

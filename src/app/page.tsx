@@ -85,14 +85,34 @@ export default function HomePage() {
     <main id="main-content">
       <style>{`
         /* ── Nav ── */
-        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.07); }
-        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; height: 54px; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1d1d1f; font-weight: 700; font-size: 16px; letter-spacing: -0.4px; }
-        .nav-actions { display: flex; align-items: center; gap: 8px; }
-        .btn-ghost { padding: 7px 16px; border-radius: 980px; font-size: 14px; font-weight: 500; color: #1d1d1f; text-decoration: none; transition: background .15s; }
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.07); }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1d1d1f; font-weight: 700; font-size: 16px; letter-spacing: -0.4px; flex-shrink: 0; }
+        .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .btn-ghost { padding: 7px 14px; border-radius: 980px; font-size: 14px; font-weight: 500; color: #1d1d1f; text-decoration: none; transition: background .15s; white-space: nowrap; }
         .btn-ghost:hover { background: rgba(0,0,0,0.05); }
-        .btn-dark { padding: 8px 18px; border-radius: 980px; font-size: 14px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; transition: background .15s; }
+        .btn-dark { padding: 8px 16px; border-radius: 980px; font-size: 14px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; transition: background .15s; white-space: nowrap; }
         .btn-dark:hover { background: #3a3a3c; }
+
+        /* Ocultar "Iniciar sesión" en móvil pequeño, dejar solo "Empezar gratis" */
+        @media (max-width: 430px) {
+          .nav-inner { padding: 0 16px; height: 50px; }
+          .nav-logo { font-size: 15px; }
+          .btn-ghost { display: none; }
+          .btn-dark { padding: 8px 14px; font-size: 13px; }
+        }
+
+        /* iPhone 16 Pro Max / Plus (430px) y menores hasta 390px */
+        @media (min-width: 390px) and (max-width: 430px) {
+          .btn-ghost { display: none; }
+        }
+
+        /* Pantallas muy pequeñas < 360px */
+        @media (max-width: 359px) {
+          .nav-logo span { display: none; }
+          .btn-ghost { display: none; }
+          .btn-dark { font-size: 12px; padding: 7px 12px; }
+        }
 
         /* ── Hero ── */
         .hero { padding: 120px 28px 100px; text-align: center; background: #fff; overflow: hidden; }
@@ -172,10 +192,32 @@ export default function HomePage() {
           .highlight-inner.reverse { direction: ltr; }
           .cta-box { padding: 48px 28px; }
         }
-        @media (max-width: 600px) {
-          .hero { padding: 80px 20px 64px; }
-          .hero-cta { flex-direction: column; align-items: stretch; }
-          .btn-primary-lg, .btn-outline-lg { justify-content: center; }
+
+        /* ── Móvil: iPhone 16 y similares (390–430px) ── */
+        @media (max-width: 430px) {
+          .hero { padding: 64px 20px 56px; }
+          .hero-title { font-size: 38px; letter-spacing: -1.5px; }
+          .hero-sub { font-size: 16px; margin-bottom: 36px; }
+          .hero-cta { flex-direction: column; align-items: stretch; gap: 10px; }
+          .btn-primary-lg { justify-content: center; padding: 15px 24px; font-size: 16px; }
+          .btn-outline-lg { justify-content: center; padding: 15px 24px; font-size: 16px; }
+          .features { padding: 64px 20px; }
+          .features-header { margin-bottom: 36px; }
+          .feature-card { padding: 22px; border-radius: 18px; }
+          .highlight { padding: 64px 20px; }
+          .highlight-visual { min-height: 180px; padding: 24px; }
+          .cta-section { padding: 64px 20px; }
+          .cta-box { padding: 40px 24px; border-radius: 24px; }
+          .cta-title { font-size: 30px; }
+          .marquee-item { padding: 14px 24px; font-size: 13px; }
+          .footer { padding: 24px 20px; }
+        }
+
+        /* ── Móvil pequeño < 360px ── */
+        @media (max-width: 359px) {
+          .hero-title { font-size: 32px; }
+          .hero-sub { font-size: 15px; }
+          .cta-box { padding: 32px 18px; }
         }
       `}</style>
 
