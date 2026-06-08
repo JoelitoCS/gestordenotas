@@ -1,66 +1,179 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, FileText, Lock, Cloud, Palette, Zap, FileOutput } from 'lucide-react'
 
+// ── Hook para detectar cuando un elemento entra en viewport ──
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setInView(true) },
+      { threshold }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [threshold])
+
+  return { ref, inView }
+}
+
 const features = [
-  { icon: FileText, name: 'Editor rico', desc: 'Escribe con formato completo. Negrita, cursiva, listas, cabeceras e imágenes integradas directamente en la nota.' },
-  { icon: FileOutput, name: 'Exportar a PDF', desc: 'Convierte cualquier nota en un documento PDF con un solo clic. Ideal para compartir o archivar.' },
-  { icon: Lock, name: 'Contraseñas cifradas', desc: 'Cifrado AES-256 en servidor. Solo tú puedes ver tus contraseñas, y únicamente durante 60 segundos.' },
-  { icon: Cloud, name: 'Sincronización en la nube', desc: 'Tus datos siempre disponibles en cualquier dispositivo. Seguro, rápido y fiable con Supabase.' },
-  { icon: Palette, name: 'Personalización total', desc: 'Elige el color de cada nota, añade etiquetas y organiza tu espacio exactamente como quieras.' },
-  { icon: Zap, name: 'Rápido y ligero', desc: 'Construido con Next.js. Cada acción responde al instante, sin esperas ni recargas de página.' },
+  { icon: FileText, name: 'Editor rico', desc: 'Escribe con formato, añade imágenes y organiza tus ideas con el editor más limpio que hayas usado.' },
+  { icon: FileOutput, name: 'Exporta a PDF', desc: 'Convierte cualquier nota en un documento PDF con un solo clic. Lista para compartir.' },
+  { icon: Lock, name: 'Contraseñas cifradas', desc: 'AES-256 en servidor. Solo tú puedes verlas, y solo durante 60 segundos.' },
+  { icon: Cloud, name: 'Siempre sincronizado', desc: 'Todos tus datos en la nube. Disponibles en cualquier dispositivo, al instante.' },
+  { icon: Palette, name: 'Totalmente tuyo', desc: 'Colorea tus notas, añade etiquetas y organiza tu espacio como quieras.' },
+  { icon: Zap, name: 'Velocidad real', desc: 'Construido con Next.js. Sin esperas, sin recargas. Todo responde al instante.' },
+]
+
+// ── Componente animado con dirección ──
+function Reveal({
+  children,
+  direction = 'up',
+  delay = 0,
+}: {
+  children: React.ReactNode
+  direction?: 'up' | 'left' | 'right'
+  delay?: number
+}) {
+  const { ref, inView } = useInView()
+
+  const initial = {
+    up: 'translateY(40px)',
+    left: 'translateX(-48px)',
+    right: 'translateX(48px)',
+  }[direction]
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? 'translate(0)' : initial,
+        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ── Carrusel infinito de pancartas ──
+const banners = [
+  { icon: FileText, text: 'Editor de notas rico' },
+  { icon: Lock, text: 'Contraseñas cifradas AES-256' },
+  { icon: FileOutput, text: 'Exporta a PDF' },
+  { icon: Cloud, text: 'Sincronización en la nube' },
+  { icon: Palette, text: 'Notas personalizables' },
+  { icon: Zap, text: 'Velocidad real' },
+  { icon: FileText, text: 'Editor de notas rico' },
+  { icon: Lock, text: 'Contraseñas cifradas AES-256' },
+  { icon: FileOutput, text: 'Exporta a PDF' },
+  { icon: Cloud, text: 'Sincronización en la nube' },
+  { icon: Palette, text: 'Notas personalizables' },
+  { icon: Zap, text: 'Velocidad real' },
 ]
 
 export default function HomePage() {
   return (
     <main id="main-content">
       <style>{`
-        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.08); }
-        .nav-inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+        /* ── Nav ── */
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.07); }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; height: 54px; display: flex; align-items: center; justify-content: space-between; }
         .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1d1d1f; font-weight: 700; font-size: 16px; letter-spacing: -0.4px; }
         .nav-actions { display: flex; align-items: center; gap: 8px; }
         .btn-ghost { padding: 7px 16px; border-radius: 980px; font-size: 14px; font-weight: 500; color: #1d1d1f; text-decoration: none; transition: background .15s; }
         .btn-ghost:hover { background: rgba(0,0,0,0.05); }
-        .btn-dark { padding: 7px 18px; border-radius: 980px; font-size: 14px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; letter-spacing: -0.2px; transition: background .15s; }
+        .btn-dark { padding: 8px 18px; border-radius: 980px; font-size: 14px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; transition: background .15s; }
         .btn-dark:hover { background: #3a3a3c; }
-        .hero { padding: 110px 24px 90px; text-align: center; background: #fff; }
-        .hero-inner { max-width: 700px; margin: 0 auto; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f7; border: 1px solid rgba(0,0,0,0.08); border-radius: 980px; padding: 5px 14px; font-size: 13px; color: #6e6e73; margin-bottom: 32px; font-weight: 500; }
-        .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: #34c759; display: inline-block; }
-        .hero-title { font-size: clamp(42px,6vw,68px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.05; color: #1d1d1f; margin-bottom: 22px; }
-        .hero-title-muted { color: #6e6e73; }
-        .hero-sub { font-size: 18px; color: #6e6e73; line-height: 1.65; max-width: 520px; margin: 0 auto 40px; }
+
+        /* ── Hero ── */
+        .hero { padding: 120px 28px 100px; text-align: center; background: #fff; overflow: hidden; }
+        .hero-inner { max-width: 720px; margin: 0 auto; }
+        .hero-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #aeaeb2; margin-bottom: 28px; }
+        .hero-title { font-size: clamp(44px, 6.5vw, 72px); font-weight: 700; letter-spacing: -2px; line-height: 1.04; color: #1d1d1f; margin-bottom: 24px; }
+        .hero-title-muted { color: #c7c7cc; }
+        .hero-sub { font-size: 18px; color: #6e6e73; line-height: 1.7; max-width: 500px; margin: 0 auto 44px; font-weight: 400; }
         .hero-cta { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
-        .btn-primary-lg { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: 980px; font-size: 15px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; letter-spacing: -0.2px; transition: background .15s; }
-        .btn-primary-lg:hover { background: #3a3a3c; }
-        .btn-outline-lg { display: inline-flex; align-items: center; gap: 6px; padding: 13px 22px; border-radius: 980px; font-size: 15px; font-weight: 500; color: #1d1d1f; text-decoration: none; border: 1px solid rgba(0,0,0,0.14); transition: background .15s; }
+        .btn-primary-lg { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 980px; font-size: 15px; font-weight: 600; color: #fff; background: #1d1d1f; text-decoration: none; transition: background .15s, transform .15s; }
+        .btn-primary-lg:hover { background: #3a3a3c; transform: translateY(-1px); }
+        .btn-outline-lg { display: inline-flex; align-items: center; gap: 6px; padding: 14px 24px; border-radius: 980px; font-size: 15px; font-weight: 500; color: #1d1d1f; text-decoration: none; border: 1px solid rgba(0,0,0,0.14); transition: background .15s; }
         .btn-outline-lg:hover { background: #f5f5f7; }
-        .divider { height: 1px; background: rgba(0,0,0,0.06); }
-        .features { padding: 90px 24px; background: #f5f5f7; }
-        .features-inner { max-width: 1080px; margin: 0 auto; }
-        .features-header { text-align: center; margin-bottom: 52px; }
-        .features-title { font-size: 38px; font-weight: 700; letter-spacing: -0.8px; color: #1d1d1f; margin-bottom: 10px; }
-        .features-sub { font-size: 17px; color: #6e6e73; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
-        .feature-card { background: #fff; border-radius: 20px; padding: 28px; border: 1px solid rgba(0,0,0,0.06); transition: box-shadow .2s; }
-        .feature-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
-        .feature-icon { width: 40px; height: 40px; border-radius: 12px; background: #f5f5f7; border: 1px solid rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+
+        /* ── Marquee / pancartas ── */
+        .marquee-section { padding: 0; background: #fff; border-top: 1px solid rgba(0,0,0,0.06); border-bottom: 1px solid rgba(0,0,0,0.06); overflow: hidden; }
+        .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
+        .marquee-item { display: flex; align-items: center; gap: 10px; padding: 18px 36px; white-space: nowrap; font-size: 14px; font-weight: 500; color: #6e6e73; border-right: 1px solid rgba(0,0,0,0.06); }
+        .marquee-item svg { color: #1d1d1f; flex-shrink: 0; }
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        /* ── Features ── */
+        .features { padding: 100px 28px; background: #f5f5f7; }
+        .features-inner { max-width: 1100px; margin: 0 auto; }
+        .features-header { margin-bottom: 64px; }
+        .features-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #aeaeb2; margin-bottom: 14px; }
+        .features-title { font-size: clamp(32px, 4vw, 48px); font-weight: 700; letter-spacing: -1px; color: #1d1d1f; max-width: 480px; line-height: 1.1; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .feature-card { background: #fff; border-radius: 22px; padding: 30px; border: 1px solid rgba(0,0,0,0.06); }
+        .feature-icon { width: 42px; height: 42px; border-radius: 13px; background: #f5f5f7; border: 1px solid rgba(0,0,0,0.07); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
         .feature-name { font-size: 16px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; letter-spacing: -0.3px; }
-        .feature-desc { font-size: 14px; color: #6e6e73; line-height: 1.6; }
-        .cta-section { padding: 90px 24px; background: #fff; }
-        .cta-box { max-width: 560px; margin: 0 auto; background: #1d1d1f; border-radius: 28px; padding: 64px 48px; text-align: center; }
-        .cta-title { font-size: 38px; font-weight: 700; color: #fff; letter-spacing: -0.8px; margin-bottom: 10px; }
-        .cta-sub { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
-        .btn-white { display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; border-radius: 980px; font-size: 15px; font-weight: 600; color: #1d1d1f; background: #fff; text-decoration: none; letter-spacing: -0.2px; transition: background .15s; }
-        .btn-white:hover { background: #f5f5f7; }
-        .footer { border-top: 1px solid rgba(0,0,0,0.07); padding: 28px 24px; background: #fff; }
-        .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .feature-desc { font-size: 14px; color: #6e6e73; line-height: 1.65; }
+
+        /* ── Highlight strip ── */
+        .highlight { padding: 100px 28px; background: #fff; }
+        .highlight-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .highlight-inner.reverse { direction: rtl; }
+        .highlight-inner.reverse > * { direction: ltr; }
+        .highlight-text-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #aeaeb2; margin-bottom: 16px; }
+        .highlight-text-title { font-size: clamp(28px, 3vw, 40px); font-weight: 700; letter-spacing: -0.8px; color: #1d1d1f; margin-bottom: 16px; line-height: 1.15; }
+        .highlight-text-desc { font-size: 16px; color: #6e6e73; line-height: 1.7; }
+        .highlight-visual { background: #f5f5f7; border-radius: 24px; border: 1px solid rgba(0,0,0,0.06); padding: 40px; min-height: 280px; display: flex; align-items: center; justify-content: center; }
+        .mock-note { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); padding: 20px; width: 100%; max-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+        .mock-note-title { font-size: 15px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; }
+        .mock-note-line { height: 10px; background: #f0f0f0; border-radius: 5px; margin-bottom: 6px; }
+        .mock-note-line.short { width: 60%; }
+        .mock-note-tag { display: inline-block; background: #f5f5f7; border-radius: 980px; padding: 3px 10px; font-size: 11px; font-weight: 500; color: #6e6e73; margin-top: 10px; }
+        .mock-pass { background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.08); padding: 16px; width: 100%; max-width: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); display: flex; flex-direction: column; gap: 10px; }
+        .mock-pass-row { display: flex; align-items: center; gap: 10px; }
+        .mock-pass-icon { width: 34px; height: 34px; border-radius: 10px; background: #f5f5f7; border: 1px solid rgba(0,0,0,0.06); flex-shrink: 0; }
+        .mock-pass-lines { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .mock-pass-line { height: 8px; background: #f0f0f0; border-radius: 4px; }
+        .mock-pass-line.short { width: 55%; }
+        .mock-pass-btn { height: 34px; background: #f5f5f7; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+
+        /* ── CTA ── */
+        .cta-section { padding: 100px 28px; background: #f5f5f7; }
+        .cta-box { max-width: 600px; margin: 0 auto; background: #1d1d1f; border-radius: 32px; padding: 72px 56px; text-align: center; }
+        .cta-title { font-size: clamp(32px, 4vw, 48px); font-weight: 700; color: #fff; letter-spacing: -1px; margin-bottom: 12px; line-height: 1.1; }
+        .cta-sub { font-size: 16px; color: rgba(255,255,255,0.45); margin-bottom: 36px; }
+        .btn-white { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 980px; font-size: 15px; font-weight: 600; color: #1d1d1f; background: #fff; text-decoration: none; transition: background .15s, transform .15s; }
+        .btn-white:hover { background: #f5f5f7; transform: translateY(-1px); }
+
+        /* ── Footer ── */
+        .footer { border-top: 1px solid rgba(0,0,0,0.07); padding: 28px 28px; background: #fff; }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
         .footer-logo { font-weight: 700; font-size: 14px; color: #1d1d1f; letter-spacing: -0.3px; }
         .footer-copy { font-size: 13px; color: #aeaeb2; }
+
+        @media (max-width: 768px) {
+          .features-grid { grid-template-columns: 1fr; }
+          .highlight-inner { grid-template-columns: 1fr; gap: 40px; }
+          .highlight-inner.reverse { direction: ltr; }
+          .cta-box { padding: 48px 28px; }
+        }
         @media (max-width: 600px) {
-          .hero { padding: 70px 20px 56px; }
-          .cta-box { padding: 44px 28px; border-radius: 20px; }
+          .hero { padding: 80px 20px 64px; }
           .hero-cta { flex-direction: column; align-items: stretch; }
           .btn-primary-lg, .btn-outline-lg { justify-content: center; }
         }
@@ -86,60 +199,146 @@ export default function HomePage() {
       {/* HERO */}
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-inner">
-          <div className="hero-badge">
-            <span className="hero-dot" aria-hidden="true" />
-            Tu espacio personal, organizado
-          </div>
-          <h1 id="hero-title" className="hero-title">
-            Notas y contraseñas.<br />
-            <span className="hero-title-muted">Todo en un lugar.</span>
-          </h1>
-          <p className="hero-sub">
-            NoteVault es tu espacio personal para escribir, organizar y proteger lo que más importa. Editor rico, PDF y gestión de contraseñas cifradas.
-          </p>
-          <div className="hero-cta">
-            <Link href="/auth/register" className="btn-primary-lg">
-              Crear cuenta gratis <ArrowRight size={15} aria-hidden="true" />
-            </Link>
-            <Link href="/auth/login" className="btn-outline-lg">
-              Ya tengo cuenta
-            </Link>
-          </div>
+          <Reveal direction="up">
+            <p className="hero-label">Gestión personal</p>
+          </Reveal>
+          <Reveal direction="up" delay={80}>
+            <h1 id="hero-title" className="hero-title">
+              Notas y contraseñas.<br />
+              <span className="hero-title-muted">Todo en un lugar.</span>
+            </h1>
+          </Reveal>
+          <Reveal direction="up" delay={160}>
+            <p className="hero-sub">
+              Escribe, organiza y protege lo que más importa. Sin complicaciones.
+            </p>
+          </Reveal>
+          <Reveal direction="up" delay={240}>
+            <div className="hero-cta">
+              <Link href="/auth/register" className="btn-primary-lg">
+                Crear cuenta gratis <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+              <Link href="/auth/login" className="btn-outline-lg">
+                Ya tengo cuenta
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <div className="divider" />
+      {/* MARQUEE — pancartas deslizantes */}
+      <div className="marquee-section" aria-hidden="true">
+        <div className="marquee-track">
+          {banners.map((b, i) => (
+            <div key={i} className="marquee-item">
+              <b.icon size={15} strokeWidth={2} />
+              {b.text}
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* FEATURES */}
       <section className="features" aria-labelledby="features-title">
         <div className="features-inner">
-          <div className="features-header">
-            <h2 id="features-title" className="features-title">Todo lo que necesitas</h2>
-            <p className="features-sub">Diseñado para ser simple, potente y seguro.</p>
-          </div>
+          <Reveal direction="left">
+            <div className="features-header">
+              <p className="features-label">Funcionalidades</p>
+              <h2 id="features-title" className="features-title">
+                Todo lo que necesitas,<br />nada que no.
+              </h2>
+            </div>
+          </Reveal>
           <div className="features-grid">
-            {features.map(f => (
-              <article key={f.name} className="feature-card" aria-labelledby={`feat-${f.name}`}>
-                <div className="feature-icon" aria-hidden="true">
-                  <f.icon size={20} color="#1d1d1f" strokeWidth={2} />
-                </div>
-                <h3 id={`feat-${f.name}`} className="feature-name">{f.name}</h3>
-                <p className="feature-desc">{f.desc}</p>
-              </article>
+            {features.map((f, i) => (
+              <Reveal
+                key={f.name}
+                direction={i % 3 === 0 ? 'left' : i % 3 === 2 ? 'right' : 'up'}
+                delay={i * 60}
+              >
+                <article className="feature-card" aria-labelledby={`feat-${i}`}>
+                  <div className="feature-icon" aria-hidden="true">
+                    <f.icon size={20} color="#1d1d1f" strokeWidth={2} />
+                  </div>
+                  <h3 id={`feat-${i}`} className="feature-name">{f.name}</h3>
+                  <p className="feature-desc">{f.desc}</p>
+                </article>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="cta-section" aria-labelledby="cta-title">
-        <div className="cta-box">
-          <h2 id="cta-title" className="cta-title">Empieza hoy, gratis.</h2>
-          <p className="cta-sub">Sin tarjeta de crédito. Sin complicaciones.</p>
-          <Link href="/auth/register" className="btn-white">
-            Crear mi cuenta <ArrowRight size={15} aria-hidden="true" />
-          </Link>
+      {/* HIGHLIGHT 1 — Notas */}
+      <section className="highlight" aria-labelledby="hl1-title">
+        <div className="highlight-inner">
+          <Reveal direction="left">
+            <div>
+              <p className="highlight-text-label">Módulo de notas</p>
+              <h2 id="hl1-title" className="highlight-text-title">
+                Escribe como piensas, no como te dejan.
+              </h2>
+              <p className="highlight-text-desc">
+                Editor rico con soporte de imágenes, colores, etiquetas y exportación a PDF. Cada nota es tuya y solo tuya.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal direction="right">
+            <div className="highlight-visual" aria-hidden="true">
+              <div className="mock-note">
+                <div className="mock-note-title">Reunión de producto</div>
+                <div className="mock-note-line" />
+                <div className="mock-note-line" />
+                <div className="mock-note-line short" />
+                <span className="mock-note-tag">Trabajo</span>
+              </div>
+            </div>
+          </Reveal>
         </div>
+      </section>
+
+      {/* HIGHLIGHT 2 — Contraseñas (invertido) */}
+      <section className="highlight" style={{ background: '#f5f5f7' }} aria-labelledby="hl2-title">
+        <div className="highlight-inner reverse">
+          <Reveal direction="right">
+            <div>
+              <p className="highlight-text-label">Módulo de contraseñas</p>
+              <h2 id="hl2-title" className="highlight-text-title">
+                Tus contraseñas, cifradas y bajo llave.
+              </h2>
+              <p className="highlight-text-desc">
+                Cifrado AES-256 en servidor. Solo tú puedes ver cada contraseña, y únicamente durante 60 segundos.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal direction="left">
+            <div className="highlight-visual" aria-hidden="true">
+              <div className="mock-pass">
+                <div className="mock-pass-row">
+                  <div className="mock-pass-icon" />
+                  <div className="mock-pass-lines">
+                    <div className="mock-pass-line" />
+                    <div className="mock-pass-line short" />
+                  </div>
+                </div>
+                <div className="mock-pass-btn" />
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="cta-section" aria-labelledby="cta-title">
+        <Reveal direction="up">
+          <div className="cta-box">
+            <h2 id="cta-title" className="cta-title">Empieza hoy,<br />gratis.</h2>
+            <p className="cta-sub">Sin tarjeta de crédito. Sin complicaciones.</p>
+            <Link href="/auth/register" className="btn-white">
+              Crear mi cuenta <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        </Reveal>
       </section>
 
       {/* FOOTER */}
