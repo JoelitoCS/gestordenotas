@@ -79,13 +79,13 @@ export default function HomePage() {
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null)
   const [isInstalled, setIsInstalled] = useState(false)
   const [installing, setInstalling] = useState(false)
+  const [isIOS, setIsIOS] = useState(false)
+  const [showIOSGuide, setShowIOSGuide] = useState(false)
 
   useEffect(() => {
-    // Detecta si ya está instalada
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true)
-    }
-    // Captura el evento de instalación
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    setIsIOS(ios)
+    if (window.matchMedia('(display-mode: standalone)').matches) setIsInstalled(true)
     const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', () => setIsInstalled(true))
@@ -217,6 +217,7 @@ export default function HomePage() {
         .pwa-phone-line.short { width: 55%; }
         .pwa-badge { position: absolute; top: -12px; right: -12px; background: #22c55e; color: #fff; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 980px; white-space: nowrap; box-shadow: 0 4px 12px rgba(34,197,94,0.35); animation: badgePulse 2.5s ease-in-out infinite; }
         @keyframes badgePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 768px) { .pwa-inner { grid-template-columns: 1fr; gap: 48px; } .pwa-visual { order: -1; } }
         @media (max-width: 430px) { .pwa-section { padding: 64px 20px; } .pwa-phone { width: 180px; } }
         .cta-section { padding: 100px 28px; background: var(--surface-2); transition: background .3s; }
@@ -434,7 +435,7 @@ export default function HomePage() {
                 <span className="pwa-pill"><Wifi size={13} aria-hidden="true" /> Funciona offline</span>
               </div>
               {isInstalled ? (
-                <div className="btn-install-installed" aria-label="App ya instalada">
+                <div className="btn-install-installed">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                     <circle cx="9" cy="9" r="9" fill="#22c55e"/>
                     <path d="M5 9l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -443,14 +444,49 @@ export default function HomePage() {
                 </div>
               ) : (
                 <button
-                  onClick={handleInstall}
-                  disabled={!installPrompt || installing}
+                  onClick={isIOS ? () => setShowIOSGuide(true) : handleInstall}
+                  disabled={!isIOS && (!installPrompt || installing)}
                   className="btn-install"
                   aria-label="Instalar Clavey como app"
                 >
                   <Download size={18} aria-hidden="true" />
                   {installing ? 'Instalando...' : 'Instalar app gratis'}
                 </button>
+              )}
+
+              {/* Modal iOS */}
+              {showIOSGuide && (
+                <div
+                  onClick={() => setShowIOSGuide(false)}
+                  style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 32px' }}
+                  role="dialog" aria-modal="true" aria-labelledby="ios-guide-title"
+                >
+                  <div
+                    onClick={e => e.stopPropagation()}
+                    style={{ background: 'var(--surface)', borderRadius: 24, padding: '28px 24px', width: '100%', maxWidth: 400, boxShadow: '0 24px 80px rgba(0,0,0,0.3)', animation: 'slideUp .3s cubic-bezier(0.22,1,0.36,1)' }}
+                  >
+                    <h3 id="ios-guide-title" style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, letterSpacing: '-0.3px' }}>Instalar en iPhone / iPad</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {[
+                        { step: '1', text: 'Abre esta página en Safari (no Chrome ni otro navegador)' },
+                        { step: '2', text: 'Pulsa el botón de compartir ️ en la barra inferior' },
+                        { step: '3', text: 'Desplázate y toca “Añadir a pantalla de inicio”' },
+                        { step: '4', text: 'Pulsa “Añadir” y listo' },
+                      ].map(({ step, text }) => (
+                        <div key={step} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--btn-bg)', color: 'var(--btn-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{step}</div>
+                          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.55, paddingTop: 4 }}>{text}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setShowIOSGuide(false)}
+                      style={{ marginTop: 24, width: '100%', padding: '13px', borderRadius: 14, border: 'none', background: 'var(--btn-bg)', color: 'var(--btn-text)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Entendido
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </Reveal>
