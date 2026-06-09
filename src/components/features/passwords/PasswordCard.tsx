@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef } from 'react'
-import { Eye, EyeOff, Copy, Trash2, X } from 'lucide-react'
+import { Eye, EyeOff, Copy, Trash2, X, Check } from 'lucide-react'
 import Image from 'next/image'
 import { revealPassword, deletePassword } from '@/actions/passwords'
 
@@ -115,16 +115,61 @@ export default function PasswordCard({ entry, onDeleted }: { entry: PasswordEntr
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--surface-2)', borderRadius: 10, padding: '9px 12px', border: '1px solid var(--border)' }}>
               <code style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)', fontFamily: '"SF Mono","Fira Code","Courier New",monospace', wordBreak: 'break-all' }} aria-label="Contraseña revelada">{revealed}</code>
-              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button onClick={handleCopy} aria-label="Copiar contraseña" title={copied ? 'Copiado' : 'Copiar'}
-                  style={{ background: copied ? 'var(--success-bg)' : 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 6, color: copied ? 'var(--success-text)' : 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
-                  <Copy size={13} aria-hidden="true" />
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                {/* Botón copiar con tooltip bocadillo */}
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  {copied && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 'calc(100% + 8px)',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: '#1d1d1f',
+                      color: '#fff',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: '5px 10px',
+                      borderRadius: 8,
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      animation: 'tooltipIn .2s cubic-bezier(0.22,1,0.36,1)',
+                      zIndex: 10,
+                    }} aria-live="polite">
+                      <Check size={11} strokeWidth={2.5} color="#4ade80" aria-hidden="true" />
+                      Copiado
+                      {/* Flecha del bocadillo */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderLeft: '5px solid transparent',
+                        borderRight: '5px solid transparent',
+                        borderTop: '5px solid #1d1d1f',
+                      }} />
+                    </div>
+                  )}
+                  <button onClick={handleCopy} aria-label="Copiar contraseña" title="Copiar"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 6, color: copied ? '#4ade80' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', transition: 'color .2s' }}>
+                    <Copy size={13} aria-hidden="true" />
+                  </button>
+                </div>
                 <button onClick={handleHide} aria-label="Ocultar contraseña" title="Ocultar"
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 6, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
                   <EyeOff size={13} aria-hidden="true" />
                 </button>
               </div>
+              <style>{`
+                @keyframes tooltipIn {
+                  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+                  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+                }
+              `}</style>
             </div>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }} aria-live="polite">
               Se oculta en <strong style={{ color: 'var(--text-secondary)' }}>{countdown}s</strong>
