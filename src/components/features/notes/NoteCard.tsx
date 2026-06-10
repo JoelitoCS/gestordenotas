@@ -102,6 +102,7 @@ export default function NoteCard({ note, onEdit, onDeleted }: NoteCardProps) {
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           )}
+
           {note.tags.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }} aria-label="Etiquetas">
               {note.tags.slice(0, 3).map(tag => (

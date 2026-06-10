@@ -10,6 +10,7 @@ const noteSchema = z.object({
   content: z.string().optional(),
   bg_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#ffffff'),
   tags: z.array(z.string()).default([]),
+
 })
 
 export type NoteActionResult = {
@@ -28,6 +29,7 @@ export async function createNote(formData: FormData): Promise<NoteActionResult> 
 
   const tagsRaw = formData.get('tags')
   const tags = tagsRaw ? (tagsRaw as string).split(',').map(t => t.trim()).filter(Boolean) : []
+  const contextRaw = formData.get('context') as string | null
 
   const parsed = noteSchema.safeParse({
     title: formData.get('title'),
@@ -65,6 +67,7 @@ export async function updateNote(id: string, formData: FormData): Promise<NoteAc
 
   const tagsRaw = formData.get('tags')
   const tags = tagsRaw ? (tagsRaw as string).split(',').map(t => t.trim()).filter(Boolean) : []
+  const contextRaw = formData.get('context') as string | null
 
   const parsed = noteSchema.safeParse({
     title: formData.get('title'),
